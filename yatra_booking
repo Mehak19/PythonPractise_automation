@@ -1,0 +1,74 @@
+import time
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+
+chrome_options = webdriver.ChromeOptions()
+prefs = {"profile.default_content_setting_values.notifications": 2}
+chrome_options.add_experimental_option("prefs", prefs)
+chrome_options.add_argument("start-maximized")
+# launch the browser
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+
+# navigate to url
+driver.get("https://www.yatra.com/")
+
+# handle synchronization issues with implicit wait
+driver.implicitly_wait(40)
+
+# maximize the window
+driver.maximize_window()
+
+# title of Homepage
+actual_title = driver.title
+
+# validate title of HomePage
+assert actual_title == "Flight, Cheap Air Tickets , Hotels, Holiday, Trains Package Booking - Yatra.com"
+print("Title of Homepage ------>", actual_title, "--------->test case passed")
+wait = WebDriverWait(driver, 30)
+time.sleep(3)
+
+departure_city = driver.find_element(By.XPATH, "//input[@id='BE_flight_origin_city']")
+departure_city.click()
+time.sleep(2)
+departure_city.clear()
+
+wait.until(expected_conditions.visibility_of_element_located, departure_city)
+time.sleep(3)
+departure_city.send_keys(("Bangalore") + Keys.ENTER)
+
+time.sleep(2)
+arrival_city = driver.find_element(By.XPATH, "//input[@id='BE_flight_arrival_city']")
+arrival_city.click()
+arrival_city.clear()
+wait.until(expected_conditions.visibility_of_element_located, arrival_city)
+arrival_city.send_keys(("Pune") + Keys.ENTER)
+
+origin_date = driver.find_element_by_xpath("//input[@id='BE_flight_origin_date']")
+wait.until(expected_conditions.visibility_of_element_located, origin_date)
+origin_date.click()
+driver.find_element_by_xpath('''//table/tbody/tr[2]/td[@title="Monday, 4 May 2020"]''').click()
+
+non_stop_flight_checkbox = driver.find_element_by_xpath('''//input[@id='BE_flight_non_stop']''')
+if non_stop_flight_checkbox.get_attribute("type") == "checkbox":
+    print("Element is a checkbox")
+else:
+    print("Element is not a checkbox")
+wait.until(expected_conditions.visibility_of_element_located, non_stop_flight_checkbox)
+# wait.until(expected_conditions.element_to_be_clickable,non_stop_flight_checkbox)
+
+driver.execute_script("arguments[0].click();", non_stop_flight_checkbox)
+
+# wait.until(expected_conditions.element_to_be_selected,non_stop_flight_checkbox)
+
+if non_stop_flight_checkbox.is_selected():
+    print("selected")
+else:
+    print("not selected")
+search = driver.find_element_by_id("BE_flight_flsearch_btn")
+wait.until(expected_conditions.visibility_of_element_located, search)
+wait.until(expected_conditions.element_to_be_clickable, search)
